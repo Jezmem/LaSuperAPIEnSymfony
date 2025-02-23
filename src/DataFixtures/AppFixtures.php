@@ -28,16 +28,19 @@ class AppFixtures extends Fixture
                 'email' => 'admin@example.com',
                 'roles' => ['ROLE_ADMIN'],
                 'password' => 'adminpassword', // Remplacez par un mot de passe sécurisé
+                'subcription_to_newsletter' => '1',
             ],
             [
                 'email' => 'user1@example.com',
                 'roles' => ['ROLE_USER'],
                 'password' => 'userpassword', // Remplacez par un mot de passe sécurisé
+                'subcription_to_newsletter' => '0',
             ],
             [
                 'email' => 'user2@example.com',
                 'roles' => ['ROLE_USER'],
                 'password' => 'userpassword', // Remplacez par un mot de passe sécurisé
+                'subcription_to_newsletter' => '0',
             ],
         ];
 
@@ -45,6 +48,7 @@ class AppFixtures extends Fixture
             $user = new User();
             $user->setEmail($data['email']);
             $user->setRoles($data['roles']);
+            $user->setSubcriptionToNewsletter($data['subcription_to_newsletter']);
             $hashedPassword = $this->passwordHasher->hashPassword($user, $data['password']);
             $user->setPassword($hashedPassword);
             $manager->persist($user);

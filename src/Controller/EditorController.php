@@ -2,6 +2,8 @@
 namespace App\Controller;
 
 use App\Entity\Editor;
+use OpenApi\Attributes as OA;
+use Nelmio\ApiDocBundle\Annotation\Model;
 use App\Repository\EditorRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,10 +17,28 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
-#[Route('/editor')]
+#[Route('/api/editor')]
+#[OA\Tag(name: 'Editor')]
 class EditorController extends AbstractController
 {
     #[Route('/', name: 'editors', methods: ['GET'])]
+    #[OA\Get(
+        summary: 'Retrieve a paginated list of editors',
+        parameters: [
+            new OA\Parameter(name: 'page', in: 'query', schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'limit', in: 'query', schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Successful response',
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(ref: new Model(type: Editor::class, groups: ['editor:read']))
+                )
+            )
+        ]
+    )]
     public function getEditors(
         EditorRepository $editorRepository, 
         Request $request, 
@@ -37,6 +57,19 @@ class EditorController extends AbstractController
     }
 
     #[Route('/{id}', methods: ['GET'])]
+    #[OA\Get(
+        summary: 'Retrieve an editor by ID',
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Successful response',
+                content: new OA\JsonContent(ref: new Model(type: Editor::class, groups: ['editor:read']))
+            )
+        ]
+    )]
     public function show(Editor $editor, SerializerInterface $serializer): Response
     {
         return new Response($serializer->serialize($editor, 'json'), Response::HTTP_OK, ['Content-Type' => 'application/json']);
@@ -44,6 +77,20 @@ class EditorController extends AbstractController
 
     #[Route('/', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
+    #[OA\Post(
+        summary: 'Create a new editor',
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'name', type: 'string'),
+                    new OA\Property(property: 'country', type: 'string')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Editor created')
+        ]
+    )]
     public function create(Request $request, EntityManagerInterface $em, ValidatorInterface $validator, SerializerInterface $serializer): Response
     {
         $data = json_decode($request->getContent(), true);
@@ -63,6 +110,20 @@ class EditorController extends AbstractController
 
     #[Route('/{id}', methods: ['PUT'])]
     #[IsGranted('ROLE_ADMIN')]
+    #[OA\Put(
+        summary: 'Update an existing editor',
+        requestBody: new OA\RequestBody(
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'name', type: 'string'),
+                    new OA\Property(property: 'country', type: 'string')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Editor updated')
+        ]
+    )]
     public function update(Request $request, Editor $editor, EntityManagerInterface $em, ValidatorInterface $validator, SerializerInterface $serializer): Response
     {
         $data = json_decode($request->getContent(), true);
@@ -80,6 +141,15 @@ class EditorController extends AbstractController
 
     #[Route('/{id}', methods: ['DELETE'])]
     #[IsGranted('ROLE_ADMIN')]
+    #[OA\Delete(
+        summary: 'Delete an editor',
+        parameters: [
+            new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))
+        ],
+        responses: [
+            new OA\Response(response: 204, description: 'Editor deleted')
+        ]
+    )]
     public function delete(Editor $editor, EntityManagerInterface $em): Response
     {
         $em->remove($editor);

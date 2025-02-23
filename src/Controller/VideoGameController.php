@@ -2,6 +2,8 @@
 namespace App\Controller;
 
 use App\Entity\VideoGame;
+use OpenApi\Attributes as OA;
+use Nelmio\ApiDocBundle\Annotation\Model;
 use App\Repository\VideoGameRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,10 +17,20 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\Cache\TagAwareCacheInterface;
 
-#[Route('/videogame')]
+#[Route('/api/videogame')]
+#[OA\Tag(name: "VideoGame")]
 class VideoGameController extends AbstractController
 {
     #[Route('/', name: 'videogames', methods: ['GET'])]
+    #[OA\Get(summary: "Retrieve a paginated list of video games")]
+    #[OA\Response(
+        response: 200,
+        description: 'Successful response',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: VideoGame::class, groups: ['videoGame:read']))
+        )
+    )]
     public function getVideoGames(
         VideoGameRepository $videoGameRepository, 
         Request $request, 
@@ -37,6 +49,7 @@ class VideoGameController extends AbstractController
     }
 
     #[Route('/{id}', methods: ['GET'])]
+    #[OA\Get(summary: "Retrieve a single video game by ID")]
     public function show(VideoGame $game, SerializerInterface $serializer): Response
     {
         return new Response($serializer->serialize($game, 'json'), Response::HTTP_OK, ['Content-Type' => 'application/json']);
@@ -44,6 +57,7 @@ class VideoGameController extends AbstractController
 
     #[Route('/', methods: ['POST'])]
     #[IsGranted('ROLE_ADMIN')]
+    #[OA\Post(summary: "Create a new video game")]
     public function create(Request $request, EntityManagerInterface $em, ValidatorInterface $validator, SerializerInterface $serializer): Response
     {
         $data = json_decode($request->getContent(), true);
@@ -64,6 +78,7 @@ class VideoGameController extends AbstractController
 
     #[Route('/{id}', methods: ['PUT'])]
     #[IsGranted('ROLE_ADMIN')]
+    #[OA\Put(summary: "Update an existing video game")]
     public function update(Request $request, VideoGame $game, EntityManagerInterface $em, ValidatorInterface $validator, SerializerInterface $serializer): Response
     {
         $data = json_decode($request->getContent(), true);
@@ -82,6 +97,7 @@ class VideoGameController extends AbstractController
 
     #[Route('/{id}', methods: ['DELETE'])]
     #[IsGranted('ROLE_ADMIN')]
+    #[OA\Delete(summary: "Delete a video game")]
     public function delete(VideoGame $game, EntityManagerInterface $em): Response
     {
         $em->remove($game);

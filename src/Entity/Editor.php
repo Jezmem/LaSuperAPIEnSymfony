@@ -19,7 +19,6 @@ class Editor
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[ORM\Column(length: 255)]
     #[Groups(['category:read', 'category:write', 'videoGame:read'])]
     #[Assert\NotBlank]
     #[Assert\Length(

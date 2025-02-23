@@ -31,6 +31,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+    #[ORM\Column]
+    private ?bool $subcription_to_newsletter = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -104,5 +107,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    public function getSubcriptionToNewsletter(): ?bool
+    {
+        return $this->subcription_to_newsletter;
+    }
+
+    public function setSubcriptionToNewsletter(bool $subcription_to_newsletter): static
+    {
+        $this->subcription_to_newsletter = $subcription_to_newsletter;
+
+        return $this;
     }
 }
