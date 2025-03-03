@@ -25,21 +25,21 @@ class AppFixtures extends Fixture
         $users = [];
         $userData = [
             [
-                'email' => 'admin@example.com',
+                'email' => 'T-800@terminator.com',
                 'roles' => ['ROLE_ADMIN'],
-                'password' => 'adminpassword', // Remplacez par un mot de passe sécurisé
+                'password' => 'LeMot2PasseTrèsSécurisé',
                 'subcription_to_newsletter' => '1',
             ],
             [
-                'email' => 'user1@example.com',
+                'email' => 'l\'utilisateurMasquer@secret.com',
                 'roles' => ['ROLE_USER'],
-                'password' => 'userpassword', // Remplacez par un mot de passe sécurisé
+                'password' => 'LeMotDePasse',
                 'subcription_to_newsletter' => '0',
             ],
             [
-                'email' => 'user2@example.com',
+                'email' => 'JaiPasMisDeRefs@films.com',
                 'roles' => ['ROLE_USER'],
-                'password' => 'userpassword', // Remplacez par un mot de passe sécurisé
+                'password' => 'LeSecondMotDePasse',
                 'subcription_to_newsletter' => '0',
             ],
         ];

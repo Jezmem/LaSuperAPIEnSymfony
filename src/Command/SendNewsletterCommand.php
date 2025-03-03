@@ -1,49 +1,47 @@
 <?php
-
 namespace App\Command;
 
+use App\Message\SendNewsletterMessage;
+use App\Repository\UserRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Scheduler\Attribute\AsCronTask;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 #[AsCommand(
-    name: 'send-newsletter',
-    description: 'Add a short description for your command',
+    name: 'app:send-newsletter',
+    description: 'Envoie la newsletter aux abonnés'
 )]
+#[AsCronTask('30 8 * * 1')] // Tout les lundi à 08h30
 class SendNewsletterCommand extends Command
 {
-    public function __construct()
+    private MessageBusInterface $messageBus;
+    private UserRepository $userRepository;
+
+    public function __construct(MessageBusInterface $messageBus, UserRepository $userRepository)
     {
         parent::__construct();
-    }
-
-    protected function configure(): void
-    {
-        $this
-            ->addArgument('arg1', InputArgument::OPTIONAL, 'Argument description')
-            ->addOption('option1', null, InputOption::VALUE_NONE, 'Option description')
-        ;
+        $this->messageBus = $messageBus;
+        $this->userRepository = $userRepository;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
-        $arg1 = $input->getArgument('arg1');
+        // Tout les utilisateurs qui ont souscrit a la newsletter
+        $subscribedUsers = $this->userRepository->findBy(['subcription_to_newsletter' => true]);
 
-        if ($arg1) {
-            $io->note(sprintf('You passed an argument: %s', $arg1));
+        if (empty($subscribedUsers)) {
+            $output->writeln('Aucun utilisateur abonné à la newsletter.');
+            return Command::SUCCESS;
         }
 
-        if ($input->getOption('option1')) {
-            // ...
+        foreach ($subscribedUsers as $user) {
+            $this->messageBus->dispatch(new SendNewsletterMessage($user->getEmail()));
         }
 
-        $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
-
+        $output->writeln(count($subscribedUsers) . ' newsletters envoyées.');
         return Command::SUCCESS;
     }
 }
